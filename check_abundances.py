@@ -5,7 +5,12 @@ Could Kronos' abundances be due to incorrect surface gravity?
 import numpy as np
 from astropy.table import Table 
 
-from solar_abundances import asplund_2009 as solar_abundances
+#from smh.photospheres.marcs import Interpolator as MARCSInterpolator
+#from smh.photospheres.abundances import asplund_2009 as solar_abundances
+#from smh.radiative_transfer.moog.cog import abundance_cog#, ew_cog
+
+from solar_abundances import aplund_2009 as solar_abundances
+
 
 abundances = Table.read("brewer_2016_table9.txt", format="cds")
 
@@ -39,16 +44,15 @@ line_list["expected_log_eps"] = expected_log_eps[use]
 
 # Generate model photosphere for the reported stellar parameters.
 # Assume v_micro = 1.1 km/s
-MARCS = smh.photospheres.MARCSInterpolator()
+MARCS = MARCSInterpolator()
 expected_photosphere = MARCS(5803, 4.33, 0.20, 1.1)
-
-expected_ew = smh.rt.moog.ewfind(line_list, expected_photosphere)
+expected_ew = ew_cog(expected_photosphere, line_list) 
 
 
 # Using those equivalent widths, calculate what the abundances
 # would be if the logg = 4.43 instead of 4.33
 alternative_photosphere = MARCS(5803, 4.43, 0.20, 1.1)
-alternative_abundances = smh.rt.moog.abundances(expected_ew, alternative_photosphere)
+alternative_abundances = abundance_cog(alternative_photosphere, expected_ew)
 
 # Summarise:
 
